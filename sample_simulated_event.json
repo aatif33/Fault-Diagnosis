@@ -1,0 +1,10 @@
+{
+  "machine_id": "SIM-CNC-01",
+  "event_type": "ALARM_RAISED",
+  "alarm_code": "DEMO-0001",
+  "machine_state": "UNKNOWN",
+  "power_state": "UNKNOWN",
+  "payload": {
+    "note": "Example only. Not a real CNC alarm."
+  }
+}

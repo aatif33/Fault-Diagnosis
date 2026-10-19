@@ -1,0 +1,10 @@
+{
+  "machine_id": "CNC-TO-BE-CONFIGURED",
+  "ip_address": "",
+  "port": 8193,
+  "timeout_seconds": 3,
+  "poll_interval_seconds": 1.0,
+  "controller_model": "Unknown",
+  "focas_dll_path": "",
+  "max_alarm_messages": 50
+}

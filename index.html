@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CNC AI Diagnosis</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon">⚙</div>
+            <div>
+                <h2>CNC AI</h2>
+                <span>Edge Diagnosis</span>
+            </div>
+        </div>
+
+        <nav>
+            <a class="active" href="#dashboard" data-view="dashboard" aria-current="page">Dashboard</a>
+            <a href="#history" data-view="history">Alarm History</a>
+            <a href="#machineStatusPanel" data-view="status">Machine Status</a>
+        </nav>
+
+        <div class="connection">
+            <span class="dot"></span>
+            <div>
+                <strong>AI Engine</strong>
+                <small>Ollama • Local</small>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+        <header class="topbar">
+            <div>
+                <p class="eyebrow">CNC MONITORING SYSTEM</p>
+                <h1>Machine Diagnosis</h1>
+            </div>
+            <div class="clock">
+                <span id="date">--</span>
+                <strong id="time">--:--:--</strong>
+            </div>
+        </header>
+
+        <div id="dashboardView">
+        <!-- MACHINE STATUS -->
+        <section class="machine-status" id="machineStatusPanel">
+            <div class="status-card">
+                <span class="status-label">MACHINE STATUS</span>
+                <div class="status-value">
+                    <span id="machineStatusLight" class="status-light green"></span>
+                    <strong id="machineStatus">RUNNING</strong>
+                </div>
+            </div>
+            <div class="status-card">
+                <span class="status-label">AI ENGINE</span>
+                <strong class="online">ONLINE</strong>
+            </div>
+        </section>
+
+        <!-- DIRECT CNC FOCAS STATUS -->
+        <section class="panel telemetry-panel" id="hardwareTelemetryPanel">
+            <div class="panel-heading">
+                <div>
+                    <span class="section-number">LIVE</span>
+                    <h2>Direct CNC Alarm Monitor</h2>
+                    <p>Read-only alarm messages retrieved directly from the CNC controller over FANUC FOCAS. No Arduino or simulated fault rules.</p>
+                </div>
+                <span id="hardwareConnection" class="connection-pill offline">WAITING FOR CNC</span>
+            </div>
+            <div class="telemetry-grid">
+                <div class="telemetry-value"><span>CONTROLLER</span><strong id="telemetryController">Unknown</strong></div>
+                <div class="telemetry-value"><span>MACHINE ID</span><strong id="telemetryMachine">CNC-FOCAS-01</strong></div>
+                <div class="telemetry-value"><span>ACTIVE ALARMS</span><strong id="telemetryAlarmCount">—</strong></div>
+                <div class="telemetry-value"><span>DATA SOURCE</span><strong id="telemetrySource">FANUC FOCAS</strong></div>
+                <div class="telemetry-value"><span>CONNECTION STATE</span><strong id="telemetryAxis">UNKNOWN</strong></div>
+                <div class="telemetry-value"><span>LAST CNC RESPONSE</span><strong id="telemetryLastSeen">—</strong></div>
+            </div>
+            <div id="hardwareAlarmBanner" class="hardware-alarm-banner hidden" aria-live="polite"></div>
+            <div id="hardwareDiagnosis" class="hardware-diagnosis hidden"></div>
+        </section>
+        <!-- Manual alarm entry removed: faults are detected by backend monitoring. -->
+<!-- RESULT -->
+        <section id="resultSection" class="panel result-panel hidden">
+            <div class="alarm-header">
+                <div class="alarm-title">
+                    <span class="alarm-icon">!</span>
+                    <div>
+                        <span class="section-number">02</span>
+                        <h2>Alarm Detected</h2>
+                    </div>
+                </div>
+                <span class="alarm-badge">ACTIVE ALARM</span>
+            </div>
+
+            <div class="alarm-meta">
+                <div><span>ALARM CODE</span><strong id="resultCode">---</strong></div>
+                
+                <div><span>DETECTED</span><strong id="detectedTime">---</strong></div>
+                <div><span>MACHINE</span><strong id="resultMachine">OFF</strong></div>
+            </div>
+
+            <div class="ai-result">
+                <div class="result-block">
+                    <span class="result-label">FAULT / DESCRIPTION</span>
+                    <div id="fault" class="result-text">Waiting for alarm lookup...</div>
+                </div>
+                <div class="result-block">
+                    <span class="result-label">POSSIBLE CAUSES</span>
+                    <div id="causes" class="result-text">Waiting for documented causes...</div>
+                </div>
+                <div class="result-block">
+                    <span class="result-label">RECOMMENDED SOLUTION</span>
+                    <div id="solution" class="result-text">Waiting for documented troubleshooting...</div>
+                </div>
+            </div>
+
+            <!-- SOURCE CITATION -->
+            <div class="result-block source-block" id="sourceBlock">
+                <span class="result-label">SOURCE DOCUMENTATION</span>
+                <div id="sourceManual" class="result-text">Source will appear when available.</div>
+                <a id="sourceLink" class="source-link hidden" href="#" target="_blank" rel="noopener noreferrer">Open source manual ↗</a>
+            </div>
+        </section>
+
+        <!-- ASK AI -->
+        <section id="chatSection" class="panel chat-panel hidden">
+            <div class="panel-heading">
+                <div>
+                    <span class="section-number blue">03</span>
+                    <h2>Ask AI</h2>
+                    <p>Ask questions about the detected alarm. Answers are advisory and must be checked against the applicable OEM procedure.</p>
+                </div>
+            </div>
+
+            <div id="chatMessages" class="chat-messages" aria-live="polite"></div>
+            <div class="chat-input">
+                <input type="text" id="question" placeholder="Why did this alarm occur?" autocomplete="off"
+                       onkeydown="if(event.key === 'Enter') askAI()">
+                <button id="askBtn" type="button" onclick="askAI()">ASK AI →</button>
+            </div>
+        </section>
+
+        </div>
+
+        <!-- ALARM HISTORY: dedicated sidebar view -->
+        <div id="historyView" class="hidden">
+        <section id="alarmHistory" class="panel history-panel">
+            <div class="panel-heading">
+                <div>
+                    <span class="section-number">04</span>
+                    <h2>Alarm History</h2>
+                    <p>Automatically detected and manually tested simulated FANUC events from the Arduino POC. These are not live CNC controller alarms.</p>
+                </div>
+                <button type="button" id="refreshHistoryBtn" onclick="loadAlarmHistory()">REFRESH ↻</button>
+            </div>
+            <p id="historyStatus" class="result-text">Loading saved alarm history...</p>
+            <div class="history-table-wrap">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Alarm</th><th>Raised</th><th>Cleared</th>
+                            <th>Duration</th><th>Machine ID</th><th>State</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTableBody">
+                        <tr><td colspan="6">Loading history...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        </div>
+    </main>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
